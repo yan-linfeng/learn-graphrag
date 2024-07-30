@@ -1,0 +1,3 @@
+graphrag
+jupyterlab
+neo4j
