@@ -102,7 +102,6 @@ def create_openai_embedding_llm(
     return result
 
 
-
 def _rate_limited(
     delegate: LLM,
     config: OpenAIConfiguration,

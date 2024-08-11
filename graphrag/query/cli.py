@@ -19,7 +19,7 @@ from graphrag.query.input.loaders.dfs import (
     store_entity_semantic_embeddings,
 )
 from graphrag.vector_stores import VectorStoreFactory, VectorStoreType
-from graphrag.vector_stores.lancedb import LanceDBVectorStore
+# from graphrag.vector_stores.lancedb import LanceDBVectorStore
 
 from .factories import get_global_search_engine, get_local_search_engine
 from .indexer_adapters import (
@@ -35,7 +35,7 @@ reporter = PrintProgressReporter("")
 
 def __get_embedding_description_store(
     entities: list[Entity],
-    vector_store_type: str = VectorStoreType.LanceDB,
+    vector_store_type: str = VectorStoreType.OracleAIVectorSearch,
     config_args: dict | None = None,
 ):
     """Get the embedding description store."""
@@ -46,36 +46,41 @@ def __get_embedding_description_store(
         "query_collection_name", "entity_description_embeddings"
     )
     config_args.update({"collection_name": collection_name})
+    print(f"{VectorStoreType=}")
     description_embedding_store = VectorStoreFactory.get_vector_store(
         vector_store_type=vector_store_type, kwargs=config_args
     )
 
     description_embedding_store.connect(**config_args)
 
-    if config_args.get("overwrite", True):
-        # this step assumps the embeddings where originally stored in a file rather
-        # than a vector database
+    store_entity_semantic_embeddings(
+        entities=entities, vectorstore=description_embedding_store
+    )
 
-        # dump embeddings from the entities list to the description_embedding_store
-        store_entity_semantic_embeddings(
-            entities=entities, vectorstore=description_embedding_store
-        )
-    else:
-        # load description embeddings to an in-memory lancedb vectorstore
-        # to connect to a remote db, specify url and port values.
-        description_embedding_store = LanceDBVectorStore(
-            collection_name=collection_name
-        )
-        description_embedding_store.connect(
-            db_uri=config_args.get("db_uri", "./lancedb")
-        )
-
-        # load data from an existing table
-        description_embedding_store.document_collection = (
-            description_embedding_store.db_connection.open_table(
-                description_embedding_store.collection_name
-            )
-        )
+    # if config_args.get("overwrite", True):
+    #     # this step assumps the embeddings where originally stored in a file rather
+    #     # than a vector database
+    #
+    #     # dump embeddings from the entities list to the description_embedding_store
+    #     store_entity_semantic_embeddings(
+    #         entities=entities, vectorstore=description_embedding_store
+    #     )
+    # else:
+    #     # load description embeddings to an in-memory lancedb vectorstore
+    #     # to connect to a remote db, specify url and port values.
+    #     description_embedding_store = LanceDBVectorStore(
+    #         collection_name=collection_name
+    #     )
+    #     description_embedding_store.connect(
+    #         db_uri=config_args.get("db_uri", "./lancedb")
+    #     )
+    #
+    #     # load data from an existing table
+    #     description_embedding_store.document_collection = (
+    #         description_embedding_store.db_connection.open_table(
+    #             description_embedding_store.collection_name
+    #         )
+    #     )
 
     return description_embedding_store
 
@@ -155,15 +160,18 @@ def run_local_search(
         config.embeddings.vector_store if config.embeddings.vector_store else {}
     )
 
+    print(f"Vector Store Args: {vector_store_args}")
     reporter.info(f"Vector Store Args: {vector_store_args}")
-    vector_store_type = vector_store_args.get("type", VectorStoreType.LanceDB)
+    vector_store_type = vector_store_args.get("type", VectorStoreType.OracleAIVectorSearch)
 
     entities = read_indexer_entities(final_nodes, final_entities, community_level)
+    print(f"{entities=}")
     description_embedding_store = __get_embedding_description_store(
         entities=entities,
         vector_store_type=vector_store_type,
         config_args=vector_store_args,
     )
+    print(f"{description_embedding_store=}")
     covariates = (
         read_indexer_covariates(final_covariates)
         if final_covariates is not None

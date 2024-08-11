@@ -54,7 +54,7 @@ class OCIGenAIEmbeddingsLLM(BaseLLM[EmbeddingInput, EmbeddingOutput]):
             setattr(embed_text_detail, key, value)
 
         embed_text_response = self.client.embed_text(embed_text_detail)
-        print(f"{embed_text_response.data=}")
+        # print(f"{embed_text_response.data=}")
 
         # Assuming the response structure is similar to OpenAI's, adjust if necessary
         return [embedding for embedding in embed_text_response.data.embeddings]

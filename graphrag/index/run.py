@@ -54,7 +54,6 @@ from .reporting import (
 )
 from .storage import MemoryPipelineStorage, PipelineStorage, load_storage
 from .typing import PipelineRunResult
-
 # Register all verbs
 from .verbs import *  # noqa
 from .workflows import (
@@ -139,6 +138,7 @@ async def run_pipeline_with_config(
 
     progress_reporter = progress_reporter or NullProgressReporter()
     storage = storage or _create_storage(config.storage)
+    print(f"{storage=}")
     cache = cache or _create_cache(config.cache)
     callbacks = callbacks or _create_reporter(config.reporting)
     dataset = dataset if dataset is not None else await _create_input(config.input)
@@ -226,6 +226,7 @@ async def run_pipeline(
     workflows_to_run = loaded_workflows.workflows
     workflow_dependencies = loaded_workflows.dependencies
 
+    print(f"{storage=}")
     context = _create_run_context(storage, cache, stats)
 
     if len(emitters) == 0:
@@ -385,81 +386,129 @@ async def _run_post_process_steps(
     context: PipelineRunContext,
     callbacks: WorkflowCallbacks,
 ) -> pd.DataFrame:
-    """Run the pipeline.
+    """
+    运行后处理步骤
 
     Args:
-        - post_process - The post process steps to run
-        - dataset - The dataset to run the steps on
-        - context - The pipeline run context
+        - post_process: 需要运行的后处理步骤
+        - dataset: 需要处理的数据集
+        - context: 流水线运行上下文
     Returns:
-        - output - The dataset after running the post process steps
+        - output: 运行后处理步骤后的数据集
     """
+    # 检查是否有后处理步骤需要运行
     if post_process is not None and len(post_process) > 0:
+        # 创建一个新的工作流来运行后处理步骤
         input_workflow = create_workflow(
             "Input Post Process",
             post_process,
         )
+        # 打印数据集信息
+        print(f"{dataset=}")
+        # 将数据集添加到工作流中
         input_workflow.add_table(DEFAULT_INPUT_NAME, dataset)
+        # 运行工作流
         await input_workflow.run(
             context=context,
             callbacks=callbacks,
         )
+        # 获取工作流输出的数据集
         dataset = cast(pd.DataFrame, input_workflow.output())
+    # 返回处理后的数据集
     return dataset
 
 
 def _validate_dataset(dataset: pd.DataFrame):
-    """Validate the dataset for the pipeline.
+    """
+    验证数据集是否符合管道要求。
 
     Args:
-        - dataset - The dataset to validate
+        - dataset: 需要验证的数据集
+
+    Raises:
+        TypeError: 如果数据集不是 pandas DataFrame 类型
     """
+    # 检查数据集是否是 pandas DataFrame 类型
     if not isinstance(dataset, pd.DataFrame):
-        msg = "Dataset must be a pandas dataframe!"
+        # 如果不是，抛出 TypeError
+        msg = "数据集必须是 pandas DataFrame 类型！"
         raise TypeError(msg)
 
 
 def _apply_substitutions(config: PipelineConfig, run_id: str) -> PipelineConfig:
+    """
+    应用配置替换
+
+    将 run_id 替换到配置中的 storage、cache 和 reporting 的 base_dir 中
+
+    Args:
+        config (PipelineConfig): 配置对象
+        run_id (str): 运行 ID
+
+    Returns:
+        PipelineConfig: 替换后的配置对象
+    """
+    # 定义替换字典
     substitutions = {"timestamp": run_id}
 
+    # 替换 storage 的 base_dir
     if (
         isinstance(
             config.storage, PipelineFileStorageConfig | PipelineBlobStorageConfig
         )
         and config.storage.base_dir
     ):
+        # 如果 storage 的 base_dir 存在，则替换 timestamp
         config.storage.base_dir = Template(config.storage.base_dir).substitute(
             substitutions
         )
+
+    # 替换 cache 的 base_dir
     if (
         isinstance(config.cache, PipelineFileCacheConfig | PipelineBlobCacheConfig)
         and config.cache.base_dir
     ):
+        # 如果 cache 的 base_dir 存在，则替换 timestamp
         config.cache.base_dir = Template(config.cache.base_dir).substitute(
             substitutions
         )
 
+    # 替换 reporting 的 base_dir
     if (
         isinstance(
             config.reporting, PipelineFileReportingConfig | PipelineBlobReportingConfig
         )
         and config.reporting.base_dir
     ):
+        # 如果 reporting 的 base_dir 存在，则替换 timestamp
         config.reporting.base_dir = Template(config.reporting.base_dir).substitute(
             substitutions
         )
 
+    # 返回替换后的配置对象
     return config
 
 
 def _create_run_context(
-    storage: PipelineStorage,
-    cache: PipelineCache,
-    stats: PipelineRunStats,
+    storage: PipelineStorage,  # 流水线存储对象
+    cache: PipelineCache,  # 流水线缓存对象
+    stats: PipelineRunStats,  # 流水线运行统计对象
 ) -> PipelineRunContext:
-    """Create the run context for the pipeline."""
-    return PipelineRunContext(
-        stats=stats,
-        cache=cache,
-        storage=storage,
+    """
+    创建流水线运行上下文。
+
+    Args:
+        storage (PipelineStorage): 流水线存储对象。
+        cache (PipelineCache): 流水线缓存对象。
+        stats (PipelineRunStats): 流水线运行统计对象。
+
+    Returns:
+        PipelineRunContext: 流水线运行上下文对象。
+    """
+    # 创建流水线运行上下文对象
+    run_context = PipelineRunContext(
+        stats=stats,  # 设置运行统计对象
+        cache=cache,  # 设置缓存对象
+        storage=storage,  # 设置存储对象
     )
+    return run_context

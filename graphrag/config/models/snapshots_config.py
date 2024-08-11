@@ -1,7 +1,11 @@
 # Copyright (c) 2024 Microsoft Corporation.
 # Licensed under the MIT License
+"""
+参数化设置：默认配置。
 
-"""Parameterization settings for the default configuration."""
+该模块定义了默认配置的参数化设置。
+
+"""
 
 from pydantic import BaseModel, Field
 
@@ -9,17 +13,22 @@ import graphrag.config.defaults as defs
 
 
 class SnapshotsConfig(BaseModel):
-    """Configuration section for snapshots."""
+    """
+    快照配置部分。
+
+    本类定义了快照的配置设置，包括是否保存GraphML、是否保存原始实体以及是否保存顶级节点。
+
+    """
 
     graphml: bool = Field(
-        description="A flag indicating whether to take snapshots of GraphML.",
+        description="是否保存GraphML的标志。",
         default=defs.SNAPSHOTS_GRAPHML,
     )
     raw_entities: bool = Field(
-        description="A flag indicating whether to take snapshots of raw entities.",
+        description="是否保存原始实体的标志。",
         default=defs.SNAPSHOTS_RAW_ENTITIES,
     )
     top_level_nodes: bool = Field(
-        description="A flag indicating whether to take snapshots of top-level nodes.",
+        description="是否保存顶级节点的标志。",
         default=defs.SNAPSHOTS_TOP_LEVEL_NODES,
     )

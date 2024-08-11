@@ -17,6 +17,7 @@ def create_table_emitter(
     emitter_type: TableEmitterType, storage: PipelineStorage, on_error: ErrorHandlerFn
 ) -> TableEmitter:
     """Create a table emitter based on the specified type."""
+    print(f"{emitter_type=}")
     match emitter_type:
         case TableEmitterType.Json:
             return JsonTableEmitter(storage)

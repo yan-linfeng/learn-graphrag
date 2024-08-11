@@ -116,6 +116,7 @@ class LanceDBVectorStore(BaseVectorStore):
     ) -> list[VectorStoreSearchResult]:
         """Perform a similarity search using a given input text."""
         query_embedding = text_embedder(text)
+        # print(f"{query_embedding=}")
         if query_embedding:
             return self.similarity_search_by_vector(query_embedding, k)
         return []

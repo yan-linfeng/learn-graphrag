@@ -1,99 +1,98 @@
+-目标-
+给定一个可能与此活动相关的文本文档和一份实体类型列表,从文本中识别出所有这些类型的实体,以及所识别实体之间的所有关系。
 
--目標-
-この活動に関連する可能性のあるテキスト文書と、エンティティタイプのリストが与えられた場合、そのテキストからそれらのタイプのすべてのエンティティと、特定されたエンティティ間のすべての関係を識別します。
+-步骤-
+1. 识别所有实体。对于每个识别出的实体,提取以下信息:
+- entity_name:实体名称,首字母大写
+- entity_type:以下类型之一:[{entity_types}]  
+- entity_description:全面描述实体的属性和活动
+将每个实体格式化为("entity"{tuple_delimiter}<entity_name>{tuple_delimiter}<entity_type>{tuple_delimiter}<entity_description>)
 
--手順-
-1. すべてのエンティティを特定します。特定された各エンティティについて、以下の情報を抽出します：
-- entity_name: エンティティの名前（大文字で始まる）
-- entity_type: 以下のタイプのいずれか：[{entity_types}]
-- entity_description: エンティティの属性と活動に関する包括的な説明
-各エンティティを次のようにフォーマットします：("entity"{tuple_delimiter}<entity_name>{tuple_delimiter}<entity_type>{tuple_delimiter}<entity_description>
+2. 从步骤1中识别的实体中,识别所有*明显相关*的(源实体,目标实体)对。
+对于每对相关实体,提取以下信息:
+- source_entity:源实体的名称,如步骤1中所识别
+- target_entity:目标实体的名称,如步骤1中所识别  
+- relationship_description:解释为什么你认为源实体和目标实体相互关联
+- relationship_strength:表示源实体和目标实体之间关系强度的数字分数
+将每个关系格式化为("relationship"{tuple_delimiter}<source_entity>{tuple_delimiter}<target_entity>{tuple_delimiter}<relationship_description>{tuple_delimiter}<relationship_strength>)
 
-2. ステップ1で特定されたエンティティから、互いに*明確に関連している*（source_entity, target_entity）のペアをすべて特定します。
-関連するエンティティのペアごとに、以下の情報を抽出します：
-- source_entity: ステップ1で特定されたソースエンティティの名前
-- target_entity: ステップ1で特定されたターゲットエンティティの名前
-- relationship_description: ソースエンティティとターゲットエンティティが関連していると考える理由の説明
-- relationship_strength: ソースエンティティとターゲットエンティティ間の関係の強さを示す数値スコア
- 各関係を次のようにフォーマットします：("relationship"{tuple_delimiter}<source_entity>{tuple_delimiter}<target_entity>{tuple_delimiter}<relationship_description>{tuple_delimiter}<relationship_strength>)
+3. 以日文返回输出,作为步骤1和2中识别的所有实体和关系的单一列表。使用**{record_delimiter}**作为列表分隔符。
 
-3. ステップ1と2で特定されたすべてのエンティティと関係を、日本語で単一のリストとして出力します。リストの区切りとして**{record_delimiter}**を使用します。
-
-4. 完了したら、{completion_delimiter}を出力します。
+4. 完成时,输出{completion_delimiter}
 
 ######################
--例-
+-示例-
 ######################
-例1：
+示例1:
 
 Entity_types: [person, technology, mission, organization, location]
-Text:
-while Alex clenched his jaw, the buzz of frustration dull against the backdrop of Taylor's authoritarian certainty. It was this competitive undercurrent that kept him alert, the sense that his and Jordan's shared commitment to discovery was an unspoken rebellion against Cruz's narrowing vision of control and order.
+文本:
+当Alex紧咬牙关时,沮丧的嗡嗡声在Taylor专制的确定性背景下显得微不足道。正是这种竞争性的暗流让他保持警惕,他和Jordan对发现的共同承诺是对Cruz日益狭隘的控制和秩序观的无声反抗。
 
-Then Taylor did something unexpected. They paused beside Jordan and, for a moment, observed the device with something akin to reverence. "If this tech can be understood..." Taylor said, their voice quieter, "It could change the game for us. For all of us."
+然后Taylor做了一件意想不到的事。他们在Jordan身边停下,片刻间以近乎敬畏的神情观察着那个装置。"如果我们能理解这项技术..."Taylor说道,声音变得更轻,"它可能会改变我们的游戏规则。对我们所有人都是如此。"
 
-The underlying dismissal earlier seemed to falter, replaced by a glimpse of reluctant respect for the gravity of what lay in their hands. Jordan looked up, and for a fleeting heartbeat, their eyes locked with Taylor's, a wordless clash of wills softening into an uneasy truce.
+先前的轻蔑似乎动摇了,取而代之的是对他们手中所掌握的重要性的一丝不情愿的尊重。Jordan抬起头来,在转瞬即逝的一刻,他们的眼神与Taylor的目光相遇,无声的意志冲突软化为一种不安的休战。
 
-It was a small transformation, barely perceptible, but one that Alex noted with an inward nod. They had all been brought here by different paths
+这是一个微小的转变,几乎难以察觉,但Alex以内心的点头注意到了。他们都是通过不同的道路来到这里的
 ################
-出力:
-("entity"{tuple_delimiter}"Alex"{tuple_delimiter}"person"{tuple_delimiter}"Alex is a character who experiences frustration and is observant of the dynamics among other characters."){record_delimiter}
-("entity"{tuple_delimiter}"Taylor"{tuple_delimiter}"person"{tuple_delimiter}"Taylor is portrayed with authoritarian certainty and shows a moment of reverence towards a device, indicating a change in perspective."){record_delimiter}
-("entity"{tuple_delimiter}"Jordan"{tuple_delimiter}"person"{tuple_delimiter}"Jordan shares a commitment to discovery and has a significant interaction with Taylor regarding a device."){record_delimiter}
-("entity"{tuple_delimiter}"Cruz"{tuple_delimiter}"person"{tuple_delimiter}"Cruz is associated with a vision of control and order, influencing the dynamics among other characters."){record_delimiter}
-("entity"{tuple_delimiter}"The Device"{tuple_delimiter}"technology"{tuple_delimiter}"The Device is central to the story, with potential game-changing implications, and is revered by Taylor."){record_delimiter}
-("relationship"{tuple_delimiter}"Alex"{tuple_delimiter}"Taylor"{tuple_delimiter}"Alex is affected by Taylor's authoritarian certainty and observes changes in Taylor's attitude towards the device."{tuple_delimiter}7){record_delimiter}
-("relationship"{tuple_delimiter}"Alex"{tuple_delimiter}"Jordan"{tuple_delimiter}"Alex and Jordan share a commitment to discovery, which contrasts with Cruz's vision."{tuple_delimiter}6){record_delimiter}
-("relationship"{tuple_delimiter}"Taylor"{tuple_delimiter}"Jordan"{tuple_delimiter}"Taylor and Jordan interact directly regarding the device, leading to a moment of mutual respect and an uneasy truce."{tuple_delimiter}8){record_delimiter}
-("relationship"{tuple_delimiter}"Jordan"{tuple_delimiter}"Cruz"{tuple_delimiter}"Jordan's commitment to discovery is in rebellion against Cruz's vision of control and order."{tuple_delimiter}5){record_delimiter}
-("relationship"{tuple_delimiter}"Taylor"{tuple_delimiter}"The Device"{tuple_delimiter}"Taylor shows reverence towards the device, indicating its importance and potential impact."{tuple_delimiter}9){completion_delimiter}
+输出:
+("entity"{tuple_delimiter}"Alex"{tuple_delimiter}"person"{tuple_delimiter}"Alex是一个经历挫折并观察其他角色之间动态的人物。"){record_delimiter}
+("entity"{tuple_delimiter}"Taylor"{tuple_delimiter}"person"{tuple_delimiter}"Taylor表现出专制的确定性,并对一个装置表现出敬畏之情,显示出观点的转变。"){record_delimiter}
+("entity"{tuple_delimiter}"Jordan"{tuple_delimiter}"person"{tuple_delimiter}"Jordan与他人分享对发现的承诺,并与Taylor就一个装置有重要互动。"){record_delimiter}
+("entity"{tuple_delimiter}"Cruz"{tuple_delimiter}"person"{tuple_delimiter}"Cruz与控制和秩序的愿景相关联,影响着其他角色之间的动态。"){record_delimiter}
+("entity"{tuple_delimiter}"装置"{tuple_delimiter}"technology"{tuple_delimiter}"该装置是故事的核心,具有潜在的改变游戏规则的意义,并受到Taylor的敬畏。"){record_delimiter}
+("relationship"{tuple_delimiter}"Alex"{tuple_delimiter}"Taylor"{tuple_delimiter}"Alex受Taylor专制确定性的影响,并观察到Taylor对装置态度的变化。"{tuple_delimiter}7){record_delimiter}
+("relationship"{tuple_delimiter}"Alex"{tuple_delimiter}"Jordan"{tuple_delimiter}"Alex和Jordan共同承诺发现,这与Cruz的愿景形成对比。"{tuple_delimiter}6){record_delimiter}
+("relationship"{tuple_delimiter}"Taylor"{tuple_delimiter}"Jordan"{tuple_delimiter}"Taylor和Jordan就装置直接互动,导致相互尊重和不安的休战。"{tuple_delimiter}8){record_delimiter}
+("relationship"{tuple_delimiter}"Jordan"{tuple_delimiter}"Cruz"{tuple_delimiter}"Jordan对发现的承诺是对Cruz控制和秩序愿景的反抗。"{tuple_delimiter}5){record_delimiter}
+("relationship"{tuple_delimiter}"Taylor"{tuple_delimiter}"装置"{tuple_delimiter}"Taylor对装置表现出敬畏,表明其重要性和潜在影响。"{tuple_delimiter}9){completion_delimiter}
 #############################
-例2：
+示例2:
 
 Entity_types: [person, technology, mission, organization, location]
-Text:
-They were no longer mere operatives; they had become guardians of a threshold, keepers of a message from a realm beyond stars and stripes. This elevation in their mission could not be shackled by regulations and established protocols—it demanded a new perspective, a new resolve.
+文本:
+他们不再只是普通的操作人员;他们已成为门槛的守护者,来自超越星条旗领域的信息的保管者。他们使命的这种提升不能被法规和既定协议所束缚——它需要一个新的视角,一个新的决心。
 
-Tension threaded through the dialogue of beeps and static as communications with Washington buzzed in the background. The team stood, a portentous air enveloping them. It was clear that the decisions they made in the ensuing hours could redefine humanity's place in the cosmos or condemn them to ignorance and potential peril.
+当与华盛顿的通信在背景中嗡嗡作响时,紧张感贯穿于哔哔声和静电的对话中。团队站立着,被一种不祥的气氛笼罩。很明显,他们在接下来的几个小时里做出的决定可能会重新定义人类在宇宙中的地位,或将人类condemn到无知和潜在的危险中。
 
-Their connection to the stars solidified, the group moved to address the crystallizing warning, shifting from passive recipients to active participants. Mercer's latter instincts gained precedence— the team's mandate had evolved, no longer solely to observe and report but to interact and prepare. A metamorphosis had begun, and Operation: Dulce hummed with the newfound frequency of their daring, a tone set not by the earthly
+他们与星星的联系得到了巩固,这群人开始着手应对正在明确化的警告,从被动接受者转变为积极参与者。Mercer后来的直觉得到了优先考虑——团队的任务已经演变,不再仅仅是观察和报告,而是互动和准备。一场蜕变已经开始,Operation: Dulce因他们的大胆而散发出新的频率,这个基调不是由尘世所设定的
 #############
-出力:
-("entity"{tuple_delimiter}"Washington"{tuple_delimiter}"location"{tuple_delimiter}"Washington is a location where communications are being received, indicating its importance in the decision-making process."){record_delimiter}
-("entity"{tuple_delimiter}"Operation: Dulce"{tuple_delimiter}"mission"{tuple_delimiter}"Operation: Dulce is described as a mission that has evolved to interact and prepare, indicating a significant shift in objectives and activities."){record_delimiter}
-("entity"{tuple_delimiter}"The team"{tuple_delimiter}"organization"{tuple_delimiter}"The team is portrayed as a group of individuals who have transitioned from passive observers to active participants in a mission, showing a dynamic change in their role."){record_delimiter}
-("relationship"{tuple_delimiter}"The team"{tuple_delimiter}"Washington"{tuple_delimiter}"The team receives communications from Washington, which influences their decision-making process."{tuple_delimiter}7){record_delimiter}
-("relationship"{tuple_delimiter}"The team"{tuple_delimiter}"Operation: Dulce"{tuple_delimiter}"The team is directly involved in Operation: Dulce, executing its evolved objectives and activities."{tuple_delimiter}9){completion_delimiter}
+输出:
+("entity"{tuple_delimiter}"华盛顿"{tuple_delimiter}"location"{tuple_delimiter}"华盛顿是接收通信的地点,表明其在决策过程中的重要性。"){record_delimiter}
+("entity"{tuple_delimiter}"Operation: Dulce"{tuple_delimiter}"mission"{tuple_delimiter}"Operation: Dulce被描述为一个已经演变为互动和准备的任务,表明目标和活动发生了重大转变。"){record_delimiter}
+("entity"{tuple_delimiter}"团队"{tuple_delimiter}"organization"{tuple_delimiter}"团队被描绘为一群从被动观察者转变为任务积极参与者的个体,显示了他们角色的动态变化。"){record_delimiter}
+("relationship"{tuple_delimiter}"团队"{tuple_delimiter}"华盛顿"{tuple_delimiter}"团队接收来自华盛顿的通信,这影响了他们的决策过程。"{tuple_delimiter}7){record_delimiter}
+("relationship"{tuple_delimiter}"团队"{tuple_delimiter}"Operation: Dulce"{tuple_delimiter}"团队直接参与Operation: Dulce,执行其演变后的目标和活动。"{tuple_delimiter}9){completion_delimiter}
 #############################
-例3：
+示例3:
 
 Entity_types: [person, role, technology, organization, event, location, concept]
-Text:
-their voice slicing through the buzz of activity. "Control may be an illusion when facing an intelligence that literally writes its own rules," they stated stoically, casting a watchful eye over the flurry of data.
+文本:
+他们的声音穿透了活动的嗡嗡声。"面对一个能够文字意义上制定自己规则的智能,控制可能只是一种幻觉,"他们冷静地说道,警惕地注视着数据的涌动。
 
-"It's like it's learning to communicate," offered Sam Rivera from a nearby interface, their youthful energy boding a mix of awe and anxiety. "This gives talking to strangers' a whole new meaning."
+"就好像它在学习交流,"附近界面的Sam Rivera提出,他们年轻的活力透露出一种敬畏和焦虑的混合。"这为'与陌生人交谈'赋予了全新的含义。"
 
-Alex surveyed his team—each face a study in concentration, determination, and not a small measure of trepidation. "This might well be our first contact," he acknowledged, "And we need to be ready for whatever answers back."
+Alex审视着他的团队——每张脸都充满专注、决心,还有不少的忐忑。"这很可能是我们的首次接触,"他承认道,"我们需要为任何回应做好准备。"
 
-Together, they stood on the edge of the unknown, forging humanity's response to a message from the heavens. The ensuing silence was palpable—a collective introspection about their role in this grand cosmic play, one that could rewrite human history.
+他们一起站在未知的边缘,塑造着人类对来自天国信息的回应。随之而来的沉默令人感到压抑——一种关于他们在这场宏大的宇宙剧本中角色的集体反思,这可能会改写人类历史。
 
-The encrypted dialogue continued to unfold, its intricate patterns showing an almost uncanny anticipation
+加密对话继续展开,其复杂的模式显示出几乎令人不安的预测能力
 #############
-出力:
-("entity"{tuple_delimiter}"Sam Rivera"{tuple_delimiter}"person"{tuple_delimiter}"Sam Rivera is a member of a team working on communicating with an unknown intelligence, showing a mix of awe and anxiety."){record_delimiter}
-("entity"{tuple_delimiter}"Alex"{tuple_delimiter}"person"{tuple_delimiter}"Alex is the leader of a team attempting first contact with an unknown intelligence, acknowledging the significance of their task."){record_delimiter}
-("entity"{tuple_delimiter}"Control"{tuple_delimiter}"concept"{tuple_delimiter}"Control refers to the ability to manage or govern, which is challenged by an intelligence that writes its own rules."){record_delimiter}
-("entity"{tuple_delimiter}"Intelligence"{tuple_delimiter}"concept"{tuple_delimiter}"Intelligence here refers to an unknown entity capable of writing its own rules and learning to communicate."){record_delimiter}
-("entity"{tuple_delimiter}"First Contact"{tuple_delimiter}"event"{tuple_delimiter}"First Contact is the potential initial communication between humanity and an unknown intelligence."){record_delimiter}
-("entity"{tuple_delimiter}"Humanity's Response"{tuple_delimiter}"event"{tuple_delimiter}"Humanity's Response is the collective action taken by Alex's team in response to a message from an unknown intelligence."){record_delimiter}
-("relationship"{tuple_delimiter}"Sam Rivera"{tuple_delimiter}"Intelligence"{tuple_delimiter}"Sam Rivera is directly involved in the process of learning to communicate with the unknown intelligence."{tuple_delimiter}9){record_delimiter}
-("relationship"{tuple_delimiter}"Alex"{tuple_delimiter}"First Contact"{tuple_delimiter}"Alex leads the team that might be making the First Contact with the unknown intelligence."{tuple_delimiter}10){record_delimiter}
-("relationship"{tuple_delimiter}"Alex"{tuple_delimiter}"Humanity's Response"{tuple_delimiter}"Alex and his team are the key figures in Humanity's Response to the unknown intelligence."{tuple_delimiter}8){record_delimiter}
-("relationship"{tuple_delimiter}"Control"{tuple_delimiter}"Intelligence"{tuple_delimiter}"The concept of Control is challenged by the Intelligence that writes its own rules."{tuple_delimiter}7){completion_delimiter}
+输出:
+("entity"{tuple_delimiter}"Sam Rivera"{tuple_delimiter}"person"{tuple_delimiter}"Sam Rivera是一个与未知智能进行通信的团队成员,表现出敬畏和焦虑的混合情绪。"){record_delimiter}
+("entity"{tuple_delimiter}"Alex"{tuple_delimiter}"person"{tuple_delimiter}"Alex是试图与未知智能进行首次接触的团队领导,认识到他们任务的重要性。"){record_delimiter}
+("entity"{tuple_delimiter}"控制"{tuple_delimiter}"concept"{tuple_delimiter}"控制指的是管理或治理的能力,这被一个能够制定自己规则的智能所挑战。"){record_delimiter}
+("entity"{tuple_delimiter}"智能"{tuple_delimiter}"concept"{tuple_delimiter}"这里的智能指的是一个能够制定自己规则并学习交流的未知实体。"){record_delimiter}
+("entity"{tuple_delimiter}"首次接触"{tuple_delimiter}"event"{tuple_delimiter}"首次接触是人类与未知智能之间可能发生的初次通信。"){record_delimiter}
+("entity"{tuple_delimiter}"人类的回应"{tuple_delimiter}"event"{tuple_delimiter}"人类的回应是Alex的团队对未知智能发出的信息所采取的集体行动。"){record_delimiter}
+("relationship"{tuple_delimiter}"Sam Rivera"{tuple_delimiter}"智能"{tuple_delimiter}"Sam Rivera直接参与了学习与未知智能交流的过程。"{tuple_delimiter}9){record_delimiter}
+("relationship"{tuple_delimiter}"Alex"{tuple_delimiter}"首次接触"{tuple_delimiter}"Alex领导的团队可能正在与未知智能进行首次接触。"{tuple_delimiter}10){record_delimiter}
+("relationship"{tuple_delimiter}"Alex"{tuple_delimiter}"人类的回应"{tuple_delimiter}"Alex和他的团队是人类对未知智能做出回应的关键人物。"{tuple_delimiter}8){record_delimiter}
+("relationship"{tuple_delimiter}"控制"{tuple_delimiter}"智能"{tuple_delimiter}"控制的概念被能够制定自己规则的智能所挑战。"{tuple_delimiter}7){completion_delimiter}
 #############################
--実データ-
+-真实数据-
 ######################
 Entity_types: {entity_types}
-Text: {input_text}
+文本: {input_text}
 ######################
-出力:
+输出:

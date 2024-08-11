@@ -83,7 +83,6 @@ def index_cli(
     cli: bool = False,
 ):
     """Run the pipeline with the given config."""
-    print(f"in index_cli()")
     run_id = resume or time.strftime("%Y%m%d-%H%M%S")
     _enable_logging(root, run_id, verbose)
     progress_reporter = _get_progress_reporter(reporter)
@@ -98,7 +97,6 @@ def index_cli(
         pipeline_config: str | PipelineConfig = config or _create_default_config(
             root, None, verbose, dryrun or False, progress_reporter
         )
-    print(f"{pipeline_config=}")
     cache = NoopPipelineCache() if nocache else None
     pipeline_emit = emit.split(",") if emit else None
     encountered_errors = False
@@ -232,8 +230,6 @@ def _create_default_config(
     reporter: ProgressReporter,
 ) -> PipelineConfig:
     """Overlay default values on an existing config or create a default config if none is provided."""
-    print(f"in _create_default_config()")
-    print(f"_create_default_config {config=}")
     if config and not Path(config).exists():
         msg = f"Configuration file {config} does not exist"
         raise ValueError
@@ -243,7 +239,6 @@ def _create_default_config(
         raise ValueError(msg)
 
     parameters = _read_config_parameters(root, config, reporter)
-    print(f"_create_default_config {parameters=}")
     log.info(
         "using default configuration: %s",
         redact(parameters.model_dump()),
@@ -252,7 +247,6 @@ def _create_default_config(
     if verbose or dryrun:
         reporter.info(f"Using default configuration: {redact(parameters.model_dump())}")
     result = create_pipeline_config(parameters, verbose)
-    print(f"_create_default_config {result=}")
     if verbose or dryrun:
         reporter.info(f"Final Config: {redact(result.model_dump())}")
 

@@ -80,6 +80,7 @@ if __name__ == "__main__":
 
     match args.method:
         case SearchType.LOCAL:
+            print("start local search")
             run_local_search(
                 args.config,
                 args.data,

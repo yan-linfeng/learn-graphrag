@@ -1,7 +1,12 @@
 # Copyright (c) 2024 Microsoft Corporation.
 # Licensed under the MIT License
 
-"""Parameterization settings for the default configuration."""
+"""
+配置参数化设置
+================
+
+该模块定义了存储配置的默认设置
+"""
 
 from pydantic import BaseModel, Field
 
@@ -10,21 +15,46 @@ from graphrag.config.enums import StorageType
 
 
 class StorageConfig(BaseModel):
-    """The default configuration section for Storage."""
+    """
+    存储配置的默认设置
+    --------------------
 
+    该类定义了存储配置的基本结构，包括存储类型、基本目录、连接字符串、容器名称和存储账户 Blob URL。
+
+    Attributes:
+        type (StorageType): 存储类型
+        base_dir (str): 基本目录
+        connection_string (str | None): 连接字符串
+        container_name (str | None): 容器名称
+        storage_account_blob_url (str | None): 存储账户 Blob URL
+    """
+
+    # 存储类型
     type: StorageType = Field(
-        description="The storage type to use.", default=defs.STORAGE_TYPE
+        description="要使用的存储类型",  # 存储类型的描述
+        default=defs.STORAGE_TYPE  # 默认值
     )
+
+    # 基本目录
     base_dir: str = Field(
-        description="The base directory for the storage.",
-        default=defs.STORAGE_BASE_DIR,
+        description="存储的基本目录",  # 基本目录的描述
+        default=defs.STORAGE_BASE_DIR  # 默认值
     )
+
+    # 连接字符串
     connection_string: str | None = Field(
-        description="The storage connection string to use.", default=None
+        description="要使用的连接字符串",  # 连接字符串的描述
+        default=None  # 默认值
     )
+
+    # 容器名称
     container_name: str | None = Field(
-        description="The storage container name to use.", default=None
+        description="要使用的容器名称",  # 容器名称的描述
+        default=None  # 默认值
     )
+
+    # 存储账户 Blob URL
     storage_account_blob_url: str | None = Field(
-        description="The storage account blob url to use.", default=None
+        description="要使用的存储账户 Blob URL",  # 存储账户 Blob URL 的描述
+        default=None  # 默认值
     )

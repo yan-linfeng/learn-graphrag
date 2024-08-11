@@ -7,7 +7,7 @@ import argparse
 
 from .cli import index_cli
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--config",
@@ -31,7 +31,7 @@ if __name__ == "__main__":
         help="If no configuration is defined, the root directory to use for input data and output data. Default value: the current directory",
         # Only required if config is not defined
         required=False,
-        default=".",
+        default="./data",
         type=str,
     )
     parser.add_argument(
@@ -73,7 +73,6 @@ if __name__ == "__main__":
     if args.overlay_defaults and not args.config:
         parser.error("--overlay-defaults requires --config")
 
-    print(f"start index_cli()")
     index_cli(
         root=args.root,
         verbose=args.verbose or False,
@@ -88,3 +87,6 @@ if __name__ == "__main__":
         overlay_defaults=args.overlay_defaults or False,
         cli=True,
     )
+
+if __name__ == "__main__":
+    main()

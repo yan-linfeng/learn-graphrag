@@ -79,8 +79,8 @@ class OCIGenAICompletionLLM(BaseLLM[CompletionInput, CompletionOutput]):
 
         # Execute the chat request
         chat_response = self.client.chat(chat_detail)
-        print(f"{chat_response=}")
-        print(f"{chat_response.data=}")
+        # print(f"{chat_response=}")
+        # print(f"{chat_response.data=}")
 
         # Extract the content from the response
         if chat_response.data and chat_response.data.chat_response and chat_response.data.chat_response.text:

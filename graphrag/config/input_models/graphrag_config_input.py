@@ -1,7 +1,13 @@
 # Copyright (c) 2024 Microsoft Corporation.
 # Licensed under the MIT License
 
-"""Parameterization settings for the default configuration."""
+"""
+默认配置参数化设置的基类。
+
+该类定义了默认配置的参数化设置，包括报告、存储、缓存、输入、嵌入图、嵌入向量、分块、快照、实体提取、摘要描述、社区报告、声明提取、聚类图、Umap、编码模型、跳过工作流程、本地搜索和全局搜索等配置。
+
+注：该类继承自LLMConfigInput。
+"""
 
 from typing_extensions import NotRequired
 
@@ -27,23 +33,29 @@ from .umap_config_input import UmapConfigInput
 
 
 class GraphRagConfigInput(LLMConfigInput):
-    """Base class for the Default-Configuration parameterization settings."""
+    """
+    默认配置参数化设置的基类。
 
-    reporting: NotRequired[ReportingConfigInput | None]
-    storage: NotRequired[StorageConfigInput | None]
-    cache: NotRequired[CacheConfigInput | None]
-    input: NotRequired[InputConfigInput | None]
-    embed_graph: NotRequired[EmbedGraphConfigInput | None]
-    embeddings: NotRequired[TextEmbeddingConfigInput | None]
-    chunks: NotRequired[ChunkingConfigInput | None]
-    snapshots: NotRequired[SnapshotsConfigInput | None]
-    entity_extraction: NotRequired[EntityExtractionConfigInput | None]
-    summarize_descriptions: NotRequired[SummarizeDescriptionsConfigInput | None]
-    community_reports: NotRequired[CommunityReportsConfigInput | None]
-    claim_extraction: NotRequired[ClaimExtractionConfigInput | None]
-    cluster_graph: NotRequired[ClusterGraphConfigInput | None]
-    umap: NotRequired[UmapConfigInput | None]
-    encoding_model: NotRequired[str | None]
-    skip_workflows: NotRequired[list[str] | str | None]
-    local_search: NotRequired[LocalSearchConfigInput | None]
-    global_search: NotRequired[GlobalSearchConfigInput | None]
+    该类定义了默认配置的参数化设置，包括报告、存储、缓存、输入、嵌入图、嵌入向量、分块、快照、实体提取、摘要描述、社区报告、声明提取、聚类图、Umap、编码模型、跳过工作流程、本地搜索和全局搜索等配置。
+
+    注：该类继承自LLMConfigInput。
+    """
+
+    reporting: NotRequired[ReportingConfigInput | None]  # 报告配置
+    storage: NotRequired[StorageConfigInput | None]  # 存储配置
+    cache: NotRequired[CacheConfigInput | None]  # 缓存配置
+    input: NotRequired[InputConfigInput | None]  # 输入配置
+    embed_graph: NotRequired[EmbedGraphConfigInput | None]  # 嵌入图配置
+    embeddings: NotRequired[TextEmbeddingConfigInput | None]  # 嵌入向量配置
+    chunks: NotRequired[ChunkingConfigInput | None]  # 分块配置
+    snapshots: NotRequired[SnapshotsConfigInput | None]  # 快照配置
+    entity_extraction: NotRequired[EntityExtractionConfigInput | None]  # 实体提取配置
+    summarize_descriptions: NotRequired[SummarizeDescriptionsConfigInput | None]  # 摘要描述配置
+    community_reports: NotRequired[CommunityReportsConfigInput | None]  # 社区报告配置
+    claim_extraction: NotRequired[ClaimExtractionConfigInput | None]  # 声明提取配置
+    cluster_graph: NotRequired[ClusterGraphConfigInput | None]  # 聚类图配置
+    umap: NotRequired[UmapConfigInput | None]  # Umap配置
+    encoding_model: NotRequired[str | None]  # 编码模型
+    skip_workflows: NotRequired[list[str] | str | None]  # 跳过工作流程
+    local_search: NotRequired[LocalSearchConfigInput | None]  # 本地搜索配置
+    global_search: NotRequired[GlobalSearchConfigInput | None]  # 全局搜索配置

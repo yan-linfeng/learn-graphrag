@@ -92,7 +92,6 @@ def get_completion_llm_args(
 def try_parse_json_object(input: str) -> tuple[str, dict]:
     """JSON cleaning and formatting utilities."""
     # Sometimes, the LLM returns a json string with some extra description, this function will clean it up.
-
     result = None
     try:
         # Try parse first
@@ -122,9 +121,9 @@ def try_parse_json_object(input: str) -> tuple[str, dict]:
 
     # Remove JSON Markdown Frame
     if input.startswith("```json"):
-        input = input[len("```json") :]
+        input = input[len("```json"):].strip()
     if input.endswith("```"):
-        input = input[: len(input) - len("```")]
+        input = input[:len(input) - len("```")].strip()
 
     try:
         result = json.loads(input)

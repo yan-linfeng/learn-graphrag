@@ -1,7 +1,7 @@
 # Copyright (c) 2024 Microsoft Corporation.
 # Licensed under the MIT License
 
-"""Parameterization settings for the default configuration."""
+"""配置参数化的默认设置。"""
 
 from pydantic import BaseModel, Field
 
@@ -9,28 +9,42 @@ import graphrag.config.defaults as defs
 
 
 class ChunkingConfig(BaseModel):
-    """Configuration section for chunking."""
+    """
+    分块配置部分。
 
-    size: int = Field(description="The chunk size to use.", default=defs.CHUNK_SIZE)
-    overlap: int = Field(
-        description="The chunk overlap to use.", default=defs.CHUNK_OVERLAP
-    )
+    该配置部分用于定义分块的相关参数，包括分块大小、重叠度、分组列等。
+    """
+
+    # 分块大小
+    size: int = Field(description="要使用的分块大小。", default=defs.CHUNK_SIZE)
+    # 重叠度
+    overlap: int = Field(description="要使用的重叠度。", default=defs.CHUNK_OVERLAP)
+    # 分组列
     group_by_columns: list[str] = Field(
-        description="The chunk by columns to use.",
-        default=defs.CHUNK_GROUP_BY_COLUMNS,
+        description="要使用的分组列。", default=defs.CHUNK_GROUP_BY_COLUMNS
     )
+    # 分块策略
     strategy: dict | None = Field(
-        description="The chunk strategy to use, overriding the default tokenization strategy",
+        description="要使用的分块策略，覆盖默认的标记化策略。",
         default=None,
     )
+    # 编码模型
     encoding_model: str | None = Field(
-        default=None, description="The encoding model to use."
+        default=None, description="要使用的编码模型。"
     )
 
     def resolved_strategy(self, encoding_model: str) -> dict:
-        """Get the resolved chunking strategy."""
+        """
+        获取解析后的分块策略。
+
+        如果未指定策略，则使用默认的标记化策略。
+
+        :param encoding_model: 编码模型
+        :return: 解析后的分块策略
+        """
         from graphrag.index.verbs.text.chunk import ChunkStrategyType
 
+        # 如果未指定策略，则使用默认的标记化策略
         return self.strategy or {
             "type": ChunkStrategyType.tokens,
             "chunk_size": self.size,

@@ -1,13 +1,13 @@
 # Copyright (c) 2024 Microsoft Corporation.
 # Licensed under the MIT License
 
-"""Parameterization settings for the default configuration."""
+
+"""参数化设置，用于默认配置"""
 
 from devtools import pformat
 from pydantic import Field
 
 import graphrag.config.defaults as defs
-
 from .cache_config import CacheConfig
 from .chunking_config import ChunkingConfig
 from .claim_extraction_config import ClaimExtractionConfig
@@ -30,117 +30,117 @@ from .umap_config import UmapConfig
 
 
 class GraphRagConfig(LLMConfig):
-    """Base class for the Default-Configuration parameterization settings."""
+    """
+    默认配置参数化设置的基础类。
+    """
 
     def __repr__(self) -> str:
-        """Get a string representation."""
+        """
+        获取字符串表示形式。
+        """
         return pformat(self, highlight=False)
 
     def __str__(self):
-        """Get a string representation."""
+        """
+        获取字符串表示形式。
+        """
         return self.model_dump_json(indent=4)
 
     root_dir: str = Field(
-        description="The root directory for the configuration.", default=None
+        description="配置的根目录", default=None
     )
 
     reporting: ReportingConfig = Field(
-        description="The reporting configuration.", default=ReportingConfig()
+        description="报告配置", default=ReportingConfig()
     )
-    """The reporting configuration."""
+    """报告配置."""
 
     storage: StorageConfig = Field(
-        description="The storage configuration.", default=StorageConfig()
+        description="存储配置", default=StorageConfig()
     )
-    """The storage configuration."""
+    """存储配置."""
 
     cache: CacheConfig = Field(
-        description="The cache configuration.", default=CacheConfig()
+        description="缓存配置", default=CacheConfig()
     )
-    """The cache configuration."""
+    """缓存配置."""
 
     input: InputConfig = Field(
-        description="The input configuration.", default=InputConfig()
+        description="输入配置", default=InputConfig()
     )
-    """The input configuration."""
+    """输入配置."""
 
     embed_graph: EmbedGraphConfig = Field(
-        description="Graph embedding configuration.",
-        default=EmbedGraphConfig(),
+        description="图嵌入配置", default=EmbedGraphConfig()
     )
-    """Graph Embedding configuration."""
+    """图嵌入配置."""
 
     embeddings: TextEmbeddingConfig = Field(
-        description="The embeddings LLM configuration to use.",
-        default=TextEmbeddingConfig(),
+        description="要使用的嵌入式LLM配置", default=TextEmbeddingConfig()
     )
-    """The embeddings LLM configuration to use."""
+    """要使用的嵌入式LLM配置."""
 
     chunks: ChunkingConfig = Field(
-        description="The chunking configuration to use.",
-        default=ChunkingConfig(),
+        description="分块配置", default=ChunkingConfig()
     )
-    """The chunking configuration to use."""
+    """分块配置."""
 
     snapshots: SnapshotsConfig = Field(
-        description="The snapshots configuration to use.",
-        default=SnapshotsConfig(),
+        description="快照配置", default=SnapshotsConfig()
     )
-    """The snapshots configuration to use."""
+    """快照配置."""
 
     entity_extraction: EntityExtractionConfig = Field(
-        description="The entity extraction configuration to use.",
-        default=EntityExtractionConfig(),
+        description="实体提取配置", default=EntityExtractionConfig()
     )
-    """The entity extraction configuration to use."""
+    """实体提取配置."""
 
     summarize_descriptions: SummarizeDescriptionsConfig = Field(
-        description="The description summarization configuration to use.",
-        default=SummarizeDescriptionsConfig(),
+        description="摘要描述配置", default=SummarizeDescriptionsConfig()
     )
-    """The description summarization configuration to use."""
+    """摘要描述配置."""
 
     community_reports: CommunityReportsConfig = Field(
-        description="The community reports configuration to use.",
-        default=CommunityReportsConfig(),
+        description="社区报告配置", default=CommunityReportsConfig()
     )
-    """The community reports configuration to use."""
+    """社区报告配置."""
 
     claim_extraction: ClaimExtractionConfig = Field(
-        description="The claim extraction configuration to use.",
-        default=ClaimExtractionConfig(
+        description="声明提取配置", default=ClaimExtractionConfig(
             enabled=defs.CLAIM_EXTRACTION_ENABLED,
         ),
     )
-    """The claim extraction configuration to use."""
+    """声明提取配置."""
 
     cluster_graph: ClusterGraphConfig = Field(
-        description="The cluster graph configuration to use.",
-        default=ClusterGraphConfig(),
+        description="聚类图配置", default=ClusterGraphConfig()
     )
-    """The cluster graph configuration to use."""
+    """聚类图配置."""
 
     umap: UmapConfig = Field(
-        description="The UMAP configuration to use.", default=UmapConfig()
+        description="UMAP配置", default=UmapConfig()
     )
-    """The UMAP configuration to use."""
+    """UMAP配置."""
 
     local_search: LocalSearchConfig = Field(
-        description="The local search configuration.", default=LocalSearchConfig()
+        description="本地搜索配置", default=LocalSearchConfig()
     )
-    """The local search configuration."""
+    """本地搜索配置."""
 
     global_search: GlobalSearchConfig = Field(
-        description="The global search configuration.", default=GlobalSearchConfig()
+        description="全局搜索配置。",
+        default=GlobalSearchConfig()
     )
-    """The global search configuration."""
+    """全局搜索配置。"""
 
     encoding_model: str = Field(
-        description="The encoding model to use.", default=defs.ENCODING_MODEL
+        description="要使用的编码模型。",
+        default=defs.ENCODING_MODEL
     )
-    """The encoding model to use."""
+    """要使用的编码模型。"""
 
     skip_workflows: list[str] = Field(
-        description="The workflows to skip, usually for testing reasons.", default=[]
+        description="要跳过的工作流程，通常用于测试目的。",
+        default=[]
     )
-    """The workflows to skip, usually for testing reasons."""
+    """要跳过的工作流程，通常用于测试目的。"""

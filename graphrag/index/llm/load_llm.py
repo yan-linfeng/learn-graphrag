@@ -179,7 +179,7 @@ def _load_oci_genai_chat_llm(
     config: dict[str, Any],
     azure=False,
 ):
-    print(f"_load_oci_genai_chat_llm {config=}")
+    # print(f"_load_oci_genai_chat_llm {config=}")
     return _create_oci_genai_chat_llm(
         OCIGenAIConfiguration({
             # Set default values
@@ -232,7 +232,7 @@ def _load_oci_genai_embeddings_llm(
     azure=False,
 ):
     # TODO: Inject Cache
-    print(f"_load_oci_genai_embeddings_llm {config=}")
+    # print(f"_load_oci_genai_embeddings_llm {config=}")
     return _create_oci_genai_embeddings_llm(
         OCIGenAIConfiguration({
             **_get_base_config(config),
@@ -270,7 +270,6 @@ def _load_azure_openai_embeddings_llm(
 
 
 def _get_base_config(config: dict[str, Any]) -> dict[str, Any]:
-    print(f"_get_base_config {config=}")
     api_key = config.get("api_key")
 
     return {
@@ -366,7 +365,7 @@ def _create_oci_genai_chat_llm(
     azure=False,
 ) -> CompletionLLM:
     """Create an openAI chat llm."""
-    print(f"{configuration=}")
+    # print(f"{configuration=}")
     client = create_oci_genai_client(configuration=configuration)
     limiter = _create_limiter(configuration)
     semaphore = _create_semaphore(configuration)

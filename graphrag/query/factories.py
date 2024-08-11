@@ -21,6 +21,7 @@ from graphrag.query.context_builder.entity_extraction import EntityVectorStoreKe
 from graphrag.query.llm.oai.chat_openai import ChatOpenAI
 from graphrag.query.llm.oai.embedding import OpenAIEmbedding
 from graphrag.query.llm.oai.typing import OpenaiApiType
+from graphrag.query.llm.oci_genai import OCIGenAIEmbedding, ChatOCIGenAI
 from graphrag.query.structured_search.global_search.community_context import (
     GlobalCommunityContext,
 )
@@ -32,12 +33,13 @@ from graphrag.query.structured_search.local_search.search import LocalSearch
 from graphrag.vector_stores import BaseVectorStore
 
 
-def get_llm(config: GraphRagConfig) -> ChatOpenAI:
+def get_llm(config: GraphRagConfig) -> [ChatOpenAI, ChatOCIGenAI]:
     """Get the LLM client."""
     is_azure_client = (
         config.llm.type == LLMType.AzureOpenAIChat
         or config.llm.type == LLMType.AzureOpenAI
     )
+    is_ocigenai_client = config.llm.type == LLMType.OCIGenAIChat
     debug_llm_key = config.llm.api_key or ""
     llm_debug_info = {
         **config.llm.model_dump(),
@@ -48,6 +50,14 @@ def get_llm(config: GraphRagConfig) -> ChatOpenAI:
     else:
         cognitive_services_endpoint = config.llm.cognitive_services_endpoint
     print(f"creating llm client with {llm_debug_info}")  # noqa T201
+    if is_ocigenai_client:
+        return ChatOCIGenAI(
+            config_file=config.llm.config_file,
+            config_profile=config.llm.config_profile,
+            compartment_id=config.llm.compartment_id,
+            endpoint=config.llm.endpoint,
+            model_id=config.llm.model_id,
+        )
     return ChatOpenAI(
         api_key=config.llm.api_key,
         azure_ad_token_provider=(
@@ -67,9 +77,10 @@ def get_llm(config: GraphRagConfig) -> ChatOpenAI:
     )
 
 
-def get_text_embedder(config: GraphRagConfig) -> OpenAIEmbedding:
+def get_text_embedder(config: GraphRagConfig) -> [OpenAIEmbedding, OCIGenAIEmbedding]:
     """Get the LLM client for embeddings."""
     is_azure_client = config.embeddings.llm.type == LLMType.AzureOpenAIEmbedding
+    is_ocigenai_client = config.embeddings.llm.type == LLMType.OCIGenAIEmbedding
     debug_embedding_api_key = config.embeddings.llm.api_key or ""
     llm_debug_info = {
         **config.embeddings.llm.model_dump(),
@@ -80,6 +91,14 @@ def get_text_embedder(config: GraphRagConfig) -> OpenAIEmbedding:
     else:
         cognitive_services_endpoint = config.embeddings.llm.cognitive_services_endpoint
     print(f"creating embedding llm client with {llm_debug_info}")  # noqa T201
+    if is_ocigenai_client:
+        return OCIGenAIEmbedding(
+            config_file=config.embeddings.llm.config_file,
+            config_profile=config.embeddings.llm.config_profile,
+            compartment_id=config.embeddings.llm.compartment_id,
+            endpoint=config.embeddings.llm.endpoint,
+            model_id=config.embeddings.llm.model_id,
+        )
     return OpenAIEmbedding(
         api_key=config.embeddings.llm.api_key,
         azure_ad_token_provider=(
@@ -115,7 +134,7 @@ def get_local_search_engine(
     token_encoder = tiktoken.get_encoding(config.encoding_model)
 
     ls_config = config.local_search
-
+    print(f"start local search")
     return LocalSearch(
         llm=llm,
         context_builder=LocalSearchMixedContext(
@@ -125,13 +144,15 @@ def get_local_search_engine(
             relationships=relationships,
             covariates=covariates,
             entity_text_embeddings=description_embedding_store,
-            embedding_vectorstore_key=EntityVectorStoreKey.ID,  # if the vectorstore uses entity title as ids, set this to EntityVectorStoreKey.TITLE
+            embedding_vectorstore_key=EntityVectorStoreKey.ID,
+            # if the vectorstore uses entity title as ids, set this to EntityVectorStoreKey.TITLE
             text_embedder=text_embedder,
             token_encoder=token_encoder,
         ),
         token_encoder=token_encoder,
         llm_params={
-            "max_tokens": ls_config.llm_max_tokens,  # change this based on the token limit you have on your model (if you are using a model with 8k limit, a good setting could be 1000=1500)
+            "max_tokens": ls_config.llm_max_tokens,
+            # change this based on the token limit you have on your model (if you are using a model with 8k limit, a good setting could be 1000=1500)
             "temperature": ls_config.temperature,
             "top_p": ls_config.top_p,
             "n": ls_config.n,
@@ -147,8 +168,10 @@ def get_local_search_engine(
             "include_relationship_weight": True,
             "include_community_rank": False,
             "return_candidate_context": False,
-            "embedding_vectorstore_key": EntityVectorStoreKey.ID,  # set this to EntityVectorStoreKey.TITLE if the vectorstore uses entity title as ids
-            "max_tokens": ls_config.max_tokens,  # change this based on the token limit you have on your model (if you are using a model with 8k limit, a good setting could be 5000)
+            "embedding_vectorstore_key": EntityVectorStoreKey.ID,
+            # set this to EntityVectorStoreKey.TITLE if the vectorstore uses entity title as ids
+            "max_tokens": ls_config.max_tokens,
+            # change this based on the token limit you have on your model (if you are using a model with 8k limit, a good setting could be 5000)
         },
         response_type=response_type,
     )

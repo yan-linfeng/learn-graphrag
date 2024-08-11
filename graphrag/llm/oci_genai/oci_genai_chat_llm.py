@@ -73,6 +73,7 @@ class OCIGenAIChatLLM(BaseLLM[CompletionInput, CompletionOutput]):
     ) -> CompletionOutput | None:
         model_parameters = kwargs.get("model_parameters", {})
         history = kwargs.get("history") or []
+        print(f"{input=}")
 
         # Prepare the chat request
         chat_request = get_chat_request(input, model_parameters, self.configuration)
@@ -93,8 +94,8 @@ class OCIGenAIChatLLM(BaseLLM[CompletionInput, CompletionOutput]):
 
         # Execute the chat request
         chat_response = self.client.chat(chat_detail)
-        print(f"{chat_response=}")
-        print(f"{chat_response.data=}")
+        # print(f"{chat_response=}")
+        # print(f"{chat_response.data=}")
 
         # Extract the content from the response
         if chat_response.data and chat_response.data.chat_response and chat_response.data.chat_response.text:

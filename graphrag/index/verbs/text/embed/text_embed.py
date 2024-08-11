@@ -79,6 +79,7 @@ async def text_embed(
             <...>
     ```
     """
+    print("in text_embed")
     vector_store_config = strategy.get("vector_store")
 
     if vector_store_config:

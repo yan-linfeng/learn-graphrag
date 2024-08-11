@@ -75,6 +75,7 @@ def store_entity_semantic_embeddings(
     vectorstore: BaseVectorStore,
 ) -> BaseVectorStore:
     """Store entity semantic embeddings in a vectorstore."""
+    print(f"in store_entity_semantic_embeddings")
     documents = [
         VectorStoreDocument(
             id=entity.id,
@@ -97,6 +98,7 @@ def store_entity_behavior_embeddings(
     vectorstore: BaseVectorStore,
 ) -> BaseVectorStore:
     """Store entity behavior embeddings in a vectorstore."""
+    print(f"in store_entity_behavior_embeddings")
     documents = [
         VectorStoreDocument(
             id=entity.id,

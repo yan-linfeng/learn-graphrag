@@ -22,6 +22,13 @@ input_type = "text"
 log = logging.getLogger(__name__)
 
 
+def get_content_before_second_underscore(input_string):
+    positions = [i for i, char in enumerate(input_string) if char == '_']
+    if len(positions) >= 2:
+        return input_string[:positions[1]]
+    return None
+
+
 async def load(
     config: PipelineInputConfig,
     progress: ProgressReporter | None,
@@ -37,9 +44,12 @@ async def load(
         text = await storage.get(path, encoding="utf-8")
         new_item = {**group, "text": text}
         new_item["id"] = gen_md5_hash(new_item, new_item.keys())
+        # new_item["id"] = get_content_before_second_underscore(str(Path(path).name)) or gen_md5_hash(new_item,
+        #                                                                                             new_item.keys())
         new_item["title"] = str(Path(path).name)
         return new_item
 
+    print(f"{config.file_pattern=}")
     files = list(
         storage.find(
             re.compile(config.file_pattern),
@@ -52,6 +62,7 @@ async def load(
         raise ValueError(msg)
     found_files = f"found text files from {config.base_dir}, found {files}"
     log.info(found_files)
+    print(f"{found_files=}")
 
     files_loaded = []
 

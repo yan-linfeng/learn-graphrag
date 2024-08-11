@@ -1,7 +1,7 @@
 # Copyright (c) 2024 Microsoft Corporation.
 # Licensed under the MIT License
 
-"""Parameterization settings for the default configuration."""
+"""默认配置的参数设置。"""
 
 from pathlib import Path
 
@@ -13,25 +13,25 @@ from .llm_config import LLMConfig
 
 
 class CommunityReportsConfig(LLMConfig):
-    """Configuration section for community reports."""
+    """社区报告的配置部分。"""
 
     prompt: str | None = Field(
-        description="The community report extraction prompt to use.", default=None
+        description="要使用的社区报告提取提示语。", default=None
     )
     max_length: int = Field(
-        description="The community report maximum length in tokens.",
+        description="报告中的最大令牌长度。",
         default=defs.COMMUNITY_REPORT_MAX_LENGTH,
     )
     max_input_length: int = Field(
-        description="The maximum input length in tokens to use when generating reports.",
+        description="生成报告时要使用的最大输入长度（以令牌计）。",
         default=defs.COMMUNITY_REPORT_MAX_INPUT_LENGTH,
     )
     strategy: dict | None = Field(
-        description="The override strategy to use.", default=None
+        description="要使用的覆盖策略。", default=None
     )
 
     def resolved_strategy(self, root_dir) -> dict:
-        """Get the resolved community report extraction strategy."""
+        """获取解析后的社区报告提取策略。"""
         from graphrag.index.verbs.graph.report import CreateCommunityReportsStrategyType
 
         return self.strategy or {

@@ -69,6 +69,7 @@ class LocalSearch(BaseSearch):
             **kwargs,
             **self.context_builder_params,
         )
+        print(("GENERATE ANSWER: %s. QUERY: %s", start_time, query))
         log.info("GENERATE ANSWER: %s. QUERY: %s", start_time, query)
         try:
             search_prompt = self.system_prompt.format(
@@ -121,6 +122,7 @@ class LocalSearch(BaseSearch):
             **kwargs,
             **self.context_builder_params,
         )
+        print("GENERATE ANSWER: %d. QUERY: %s", start_time, query)
         log.info("GENERATE ANSWER: %d. QUERY: %s", start_time, query)
         try:
             search_prompt = self.system_prompt.format(
@@ -131,12 +133,15 @@ class LocalSearch(BaseSearch):
                 {"role": "user", "content": query},
             ]
 
+            print(f"{search_messages=}")
+            print(f"{self.llm=}")
             response = self.llm.generate(
                 messages=search_messages,
                 streaming=True,
                 callbacks=self.callbacks,
                 **self.llm_params,
             )
+            print(f"{response}")
 
             return SearchResult(
                 response=response,
