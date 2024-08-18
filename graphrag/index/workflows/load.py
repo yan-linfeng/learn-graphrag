@@ -50,20 +50,25 @@ def load_workflows(
     additional_workflows: WorkflowDefinitions | None = None,
     memory_profile: bool = False,
 ) -> LoadWorkflowResult:
-    """Load the given workflows.
+    """
+    加载指定的工作流
 
     Args:
-        - workflows_to_load - The workflows to load
-        - additional_verbs - The list of custom verbs available to the workflows
-        - additional_workflows - The list of custom workflows
+        - workflows_to_load - 要加载的工作流
+        - additional_verbs - 自定义的动词列表
+        - additional_workflows - 自定义的工作流列表
     Returns:
-        - output[0] - The loaded workflow names in the order they should be run
-        - output[1] - A dictionary of workflow name to workflow dependencies
+        - output[0] - 加载的工作流名称，按运行顺序排列
+        - output[1] - 工作流名称到依赖关系的字典
     """
+    # 工作流图，存储工作流名称到 WorkflowToRun 对象的映射
     workflow_graph: dict[str, WorkflowToRun] = {}
 
+    # 全局变量，用于记录匿名工作流的数量
     global anonymous_workflow_count
     for reference in workflows_to_load:
+        # 获取工作流名称，如果为空，则使用匿名工作流名称
+        print(f"{reference.name=}")
         name = reference.name
         is_anonymous = name is None or name.strip() == ""
         if is_anonymous:
@@ -71,7 +76,9 @@ def load_workflows(
             anonymous_workflow_count += 1
         name = cast(str, name)
 
+        # 获取工作流配置
         config = reference.config
+        # 创建工作流对象
         workflow = create_workflow(
             name or "MISSING NAME!",
             reference.steps,
@@ -79,17 +86,20 @@ def load_workflows(
             additional_verbs,
             additional_workflows,
         )
+        # 将工作流对象添加到工作流图中
         workflow_graph[name] = WorkflowToRun(workflow, config=config or {})
 
-    # Backfill any missing workflows
+    # 回填缺失的工作流
     for name in list(workflow_graph.keys()):
         workflow = workflow_graph[name]
+        # 获取工作流依赖关系
         deps = [
             d.replace("workflow:", "")
             for d in workflow.workflow.dependencies
             if d.startswith("workflow:")
         ]
         for dependency in deps:
+            # 如果依赖关系不在工作流图中，则创建新的工作流对象
             if dependency not in workflow_graph:
                 reference = {"name": dependency, **workflow.config}
                 workflow_graph[dependency] = WorkflowToRun(
@@ -103,15 +113,25 @@ def load_workflows(
                     config=reference,
                 )
 
-    # Run workflows in order of dependencies
+    # 运行工作流，按依赖关系顺序排列
     def filter_wf_dependencies(name: str) -> list[str]:
+        """
+        过滤工作流依赖关系
+
+        Args:
+            - name - 工作流名称
+        Returns:
+            - 依赖关系列表
+        """
         externals = [
             e.replace("workflow:", "")
             for e in workflow_graph[name].workflow.dependencies
         ]
         return [e for e in externals if e in workflow_graph]
 
+    # 创建任务图，存储工作流名称到依赖关系列表的映射
     task_graph = {name: filter_wf_dependencies(name) for name in workflow_graph}
+    # 运行工作流，按依赖关系顺序排列
     workflow_run_order = topological_sort(task_graph)
     workflows = [workflow_graph[name] for name in workflow_run_order]
     log.info("Workflow Run Order: %s", workflow_run_order)

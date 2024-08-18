@@ -44,6 +44,7 @@ class OCIGenAIConfiguration(Hashable, LLMConfig):
     # Feature Flags
     _model_supports_json: bool | None
     _concurrent_requests: int | None
+    _encoding_model: str | None
 
     # The raw configuration object
     _raw_config: dict
@@ -101,6 +102,7 @@ class OCIGenAIConfiguration(Hashable, LLMConfig):
         self._request_timeout = lookup_float("request_timeout")
         self._model_supports_json = lookup_bool("model_supports_json")
         self._concurrent_requests = lookup_int("concurrent_requests")
+        self._encoding_model = lookup_str("encoding_model")
         self._raw_config = config
 
     @property
@@ -192,6 +194,11 @@ class OCIGenAIConfiguration(Hashable, LLMConfig):
     def concurrent_requests(self) -> int | None:
         """Concurrent requests property definition."""
         return self._concurrent_requests
+
+    @property
+    def encoding_model(self) -> str | None:
+        """Encoding model property definition."""
+        return _non_blank(self._encoding_model)
 
     @property
     def raw_config(self) -> dict:

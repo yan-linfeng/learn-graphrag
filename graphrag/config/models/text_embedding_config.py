@@ -60,7 +60,8 @@ class TextEmbeddingConfig(LLMConfig):
 
         # 否则，返回默认策略配置
         return {
-            "type": TextEmbedStrategyType.openai,
+            # "type": TextEmbedStrategyType.openai,
+            "type": TextEmbedStrategyType.oci_genai,
             "llm": self.llm.model_dump(),
             **self.parallelization.model_dump(),
             "batch_size": self.batch_size,

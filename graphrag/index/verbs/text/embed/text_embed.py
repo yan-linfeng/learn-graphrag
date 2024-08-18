@@ -31,6 +31,7 @@ class TextEmbedStrategyType(str, Enum):
     """TextEmbedStrategyType class definition."""
 
     openai = "openai"
+    oci_genai = "oci_genai"
     mock = "mock"
 
     def __repr__(self):
@@ -255,6 +256,10 @@ def load_strategy(strategy: TextEmbedStrategyType) -> TextEmbeddingStrategy:
             from .strategies.openai import run as run_openai
 
             return run_openai
+        case TextEmbedStrategyType.oci_genai:
+            from .strategies.oci_genai import run as run_oci_genai
+
+            return run_oci_genai
         case TextEmbedStrategyType.mock:
             from .strategies.mock import run as run_mock
 

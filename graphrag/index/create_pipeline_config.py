@@ -108,52 +108,111 @@ builtin_document_attributes: set[str] = {
 
 
 def create_pipeline_config(settings: GraphRagConfig, verbose=False) -> PipelineConfig:
-    """Get the default config for the pipeline."""
-    # relative to the root_dir
+    """
+    获取管道的默认配置。
+
+    Args:
+        settings (GraphRagConfig): 管道配置设置。
+        verbose (bool, optional): 是否输出详细日志。 Defaults to False.
+
+    Returns:
+        PipelineConfig: 管道配置。
+    """
+    # 相对于根目录的配置
     if verbose:
+        # 输出LLM设置日志
         _log_llm_settings(settings)
 
+    # 确定跳过的工作流
     skip_workflows = _determine_skip_workflows(settings)
+    if verbose:
+        log.info(f"{skip_workflows=}")
+    # 获取嵌入字段
     embedded_fields = _get_embedded_fields(settings)
+    if verbose:
+        log.info(f"{embedded_fields=}")
+    # 判断协变量是否启用
+    if verbose:
+        log.info(f"{settings.claim_extraction.enabled=}")
     covariates_enabled = (
         settings.claim_extraction.enabled
         and create_final_covariates not in skip_workflows
     )
 
+    # 创建管道配置
     result = PipelineConfig(
+        # 根目录
         root_dir=settings.root_dir,
+        # 输入配置
         input=_get_pipeline_input_config(settings),
+        # 报告配置
         reporting=_get_reporting_config(settings),
+        # 存储配置
         storage=_get_storage_config(settings),
+        # 缓存配置
         cache=_get_cache_config(settings),
+        # 工作流配置
         workflows=[
+            # 文档工作流
             *_document_workflows(settings, embedded_fields),
+            # 文本单元工作流
             *_text_unit_workflows(settings, covariates_enabled, embedded_fields),
+            # 图工作流
             *_graph_workflows(settings, embedded_fields),
+            # 社区工作流
             *_community_workflows(settings, covariates_enabled, embedded_fields),
+            # 协变量工作流（如果启用）
             *(_covariate_workflows(settings) if covariates_enabled else []),
         ],
     )
 
-    # Remove any workflows that were specified to be skipped
-    log.info("skipping workflows %s", ",".join(skip_workflows))
+    # 移除跳过的工作流
+    log.info("跳过工作流 %s", ",".join(skip_workflows))
     result.workflows = [w for w in result.workflows if w.name not in skip_workflows]
     return result
 
 
 def _get_embedded_fields(settings: GraphRagConfig) -> set[str]:
+    """
+    获取嵌入字段
+
+    根据 settings.embeddings.target 的值，返回相应的嵌入字段集合
+
+    Args:
+        settings (GraphRagConfig): 配置对象
+
+    Returns:
+        set[str]: 嵌入字段集合
+    """
+    # 匹配 settings.embeddings.target 的值
     match settings.embeddings.target:
+        # 如果目标是所有嵌入字段，则返回所有嵌入字段减去跳过的字段
         case TextEmbeddingTarget.all:
             return all_embeddings - {*settings.embeddings.skip}
+        # 如果目标是必需的嵌入字段，则返回必需的嵌入字段
         case TextEmbeddingTarget.required:
             return required_embeddings
+        # 如果目标值未知，则抛出 ValueError
         case _:
             msg = f"Unknown embeddings target: {settings.embeddings.target}"
             raise ValueError(msg)
 
 
 def _determine_skip_workflows(settings: GraphRagConfig) -> list[str]:
+    """
+    确定跳过的工作流
+
+    根据 settings.skip_workflows 的值，返回跳过的工作流列表
+
+    Args:
+        settings (GraphRagConfig): 配置对象
+
+    Returns:
+        list[str]: 跳过的工作流列表
+    """
+    # 获取跳过的工作流列表
     skip_workflows = settings.skip_workflows
+    # 如果 create_final_covariates 在跳过的工作流列表中，并且 join_text_units_to_covariate_ids 不在跳过的工作流列表中，则将 join_text_units_to_covariate_ids 添加到跳过的工作流列表中
     if (
         create_final_covariates in skip_workflows
         and join_text_units_to_covariate_ids not in skip_workflows

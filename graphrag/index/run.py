@@ -83,74 +83,150 @@ async def run_pipeline_with_config(
     is_resume_run: bool = False,
     **_kwargs: dict,
 ) -> AsyncIterable[PipelineRunResult]:
-    """Run a pipeline with the given config.
+    """
+    使用给定的配置运行管道。
 
     Args:
-        - config_or_path - The config to run the pipeline with
-        - workflows - The workflows to run (this overrides the config)
-        - dataset - The dataset to run the pipeline on (this overrides the config)
-        - storage - The storage to use for the pipeline (this overrides the config)
-        - cache - The cache to use for the pipeline (this overrides the config)
-        - reporter - The reporter to use for the pipeline (this overrides the config)
-        - input_post_process_steps - The post process steps to run on the input data (this overrides the config)
-        - additional_verbs - The custom verbs to use for the pipeline.
-        - additional_workflows - The custom workflows to use for the pipeline.
-        - emit - The table emitters to use for the pipeline.
-        - memory_profile - Whether or not to profile the memory.
-        - run_id - The run id to start or resume from.
+        - config_or_path: 要运行的管道配置或路径。
+        - workflows: 要运行的工作流（覆盖配置）。
+        - dataset: 要运行管道的数据集（覆盖配置）。
+        - storage: 要使用的存储（覆盖配置）。
+        - cache: 要使用的缓存（覆盖配置）。
+        - reporter: 要使用的报告器（覆盖配置）。
+        - input_post_process_steps: 要在输入数据上运行的后处理步骤（覆盖配置）。
+        - additional_verbs: 自定义动词。
+        - additional_workflows: 自定义工作流。
+        - emit: 要使用的表格发射器。
+        - memory_profile: 是否启用内存分析。
+        - run_id: 要启动或恢复的运行ID。
     """
-    if isinstance(config_or_path, str):
-        log.info("Running pipeline with config %s", config_or_path)
-    else:
-        log.info("Running pipeline")
 
+    # 如果配置是字符串，则记录日志
+    if isinstance(config_or_path, str):
+        log.info("使用配置 %s 运行管道", config_or_path)
+    else:
+        log.info("运行管道")
+
+    # 生成运行ID
     run_id = run_id or time.strftime("%Y%m%d-%H%M%S")
+
+    # 加载配置
     config = load_pipeline_config(config_or_path)
+
+    # 应用替换
     config = _apply_substitutions(config, run_id)
+
+    # 获取根目录
     root_dir = config.root_dir
 
+    # 创建存储
     def _create_storage(config: PipelineStorageConfigTypes | None) -> PipelineStorage:
+        """
+        创建存储。
+
+        Args:
+            - config: 存储配置。
+
+        Returns:
+            - PipelineStorage: 存储实例。
+        """
         return load_storage(
             config
             or PipelineFileStorageConfig(base_dir=str(Path(root_dir or "") / "output"))
         )
 
+    # 创建缓存
     def _create_cache(config: PipelineCacheConfigTypes | None) -> PipelineCache:
+        """
+        创建缓存。
+
+        Args:
+            - config: 缓存配置。
+
+        Returns:
+            - PipelineCache: 缓存实例。
+        """
         return load_cache(config or PipelineMemoryCacheConfig(), root_dir=root_dir)
 
+    # 创建报告器
     def _create_reporter(
         config: PipelineReportingConfigTypes | None,
     ) -> WorkflowCallbacks | None:
+        """
+        创建报告器。
+
+        Args:
+            - config: 报告器配置。
+
+        Returns:
+            - WorkflowCallbacks: 报告器实例。
+        """
         return load_pipeline_reporter(config, root_dir) if config else None
 
+    # 创建输入数据
     async def _create_input(
         config: PipelineInputConfigTypes | None,
     ) -> pd.DataFrame | None:
+        """
+        创建输入数据。
+
+        Args:
+            - config: 输入数据配置。
+
+        Returns:
+            - pd.DataFrame: 输入数据。
+        """
         if config is None:
             return None
 
         return await load_input(config, progress_reporter, root_dir)
 
+    # 创建后处理步骤
     def _create_postprocess_steps(
         config: PipelineInputConfigTypes | None,
     ) -> list[PipelineWorkflowStep] | None:
+        """
+        创建后处理步骤。
+
+        Args:
+            - config: 后处理步骤配置。
+
+        Returns:
+            - list[PipelineWorkflowStep]: 后处理步骤。
+        """
         return config.post_process if config is not None else None
 
+    # 设置报告器
     progress_reporter = progress_reporter or NullProgressReporter()
+
+    # 设置存储
     storage = storage or _create_storage(config.storage)
+
+    # 打印存储信息
     print(f"{storage=}")
+
+    # 设置缓存
     cache = cache or _create_cache(config.cache)
+
+    # 设置报告器
     callbacks = callbacks or _create_reporter(config.reporting)
+    # 设置输入数据
     dataset = dataset if dataset is not None else await _create_input(config.input)
+
+    # 设置后处理步骤
     post_process_steps = input_post_process_steps or _create_postprocess_steps(
         config.input
     )
+
+    # 设置工作流
     workflows = workflows or config.workflows
 
+    # 检查输入数据是否为空
     if dataset is None:
-        msg = "No dataset provided!"
+        msg = "没有提供输入数据!"
         raise ValueError(msg)
 
+    # 运行管道
     async for table in run_pipeline(
         workflows=workflows,
         dataset=dataset,
@@ -183,33 +259,42 @@ async def run_pipeline(
     is_resume_run: bool = False,
     **_kwargs: dict,
 ) -> AsyncIterable[PipelineRunResult]:
-    """Run the pipeline.
+    """
+    运行管道。
 
     Args:
-        - workflows - The workflows to run
-        - dataset - The dataset to run the pipeline on, specifically a dataframe with the following columns at a minimum:
-            - id - The id of the document
-            - text - The text of the document
-            - title - The title of the document
-            These must exist after any post process steps are run if there are any!
-        - storage - The storage to use for the pipeline
-        - cache - The cache to use for the pipeline
-        - reporter - The reporter to use for the pipeline
-        - input_post_process_steps - The post process steps to run on the input data
-        - additional_verbs - The custom verbs to use for the pipeline
-        - additional_workflows - The custom workflows to use for the pipeline
-        - debug - Whether or not to run in debug mode
+        - workflows: 要运行的工作流
+        - dataset: 要运行管道的数据集，必须包含以下列：
+            - id: 文档ID
+            - text: 文档文本
+            - title: 文档标题
+        - storage: 存储器
+        - cache: 缓存器
+        - reporter: 报告器
+        - input_post_process_steps: 输入数据后处理步骤
+        - additional_verbs: 自定义动词
+        - additional_workflows: 自定义工作流
+        - debug: 是否运行调试模式
     Returns:
-        - output - An iterable of workflow results as they complete running, as well as any errors that occur
+        - output: 工作流结果异步迭代器
     """
+    # 开始时间
     start_time = time.time()
+    # 统计信息
     stats = PipelineRunStats()
+    # 存储器
     storage = storage or MemoryPipelineStorage()
+    # 缓存器
     cache = cache or InMemoryCache()
+    # 报告器
     progress_reporter = progress_reporter or NullProgressReporter()
+    # 回调函数
     callbacks = callbacks or ConsoleWorkflowCallbacks()
+    # 创建回调链
     callbacks = _create_callback_chain(callbacks, progress_reporter)
+    # 发射器
     emit = emit or [TableEmitterType.Parquet]
+    # 创建表发射器
     emitters = create_table_emitters(
         emit,
         storage,
@@ -217,28 +302,36 @@ async def run_pipeline(
             "Error emitting table", e, s, d
         ),
     )
+    # 加载工作流
     loaded_workflows = load_workflows(
         workflows,
         additional_verbs=additional_verbs,
         additional_workflows=additional_workflows,
         memory_profile=memory_profile,
     )
+    # 工作流列表
     workflows_to_run = loaded_workflows.workflows
+    # 工作流依赖关系
     workflow_dependencies = loaded_workflows.dependencies
 
+    # 打印存储器信息
     print(f"{storage=}")
+    # 创建运行上下文
     context = _create_run_context(storage, cache, stats)
 
+    # 如果没有发射器，打印警告信息
     if len(emitters) == 0:
         log.info(
             "No emitters provided. No table outputs will be generated. This is probably not correct."
         )
 
+    # 定义统计信息保存函数
     async def dump_stats() -> None:
         await storage.set(
             "stats.json", json.dumps(asdict(stats), indent=4, ensure_ascii=False)
         )
 
+    # 定义从存储器加载表函数
     async def load_table_from_storage(name: str) -> pd.DataFrame:
         if not await storage.has(name):
             msg = f"Could not find {name} in storage!"
@@ -250,15 +343,18 @@ async def run_pipeline(
             log.exception("error loading table from storage: %s", name)
             raise
 
+    # 定义注入工作流数据依赖函数
     async def inject_workflow_data_dependencies(workflow: Workflow) -> None:
         workflow.add_table(DEFAULT_INPUT_NAME, dataset)
         deps = workflow_dependencies[workflow.name]
+        print("dependencies for %s: %s", workflow.name, deps)
         log.info("dependencies for %s: %s", workflow.name, deps)
         for id in deps:
             workflow_id = f"workflow:{id}"
             table = await load_table_from_storage(f"{id}.parquet")
             workflow.add_table(workflow_id, table)
 
+    # 定义写入工作流统计信息函数
     async def write_workflow_stats(
         workflow: Workflow,
         workflow_result: WorkflowRunResult,
@@ -283,17 +379,19 @@ async def run_pipeline(
             "first row of %s => %s", workflow_name, workflow.output().iloc[0].to_json()
         )
 
+    # 定义发射工作流输出函数
     async def emit_workflow_output(workflow: Workflow) -> pd.DataFrame:
         output = cast(pd.DataFrame, workflow.output())
         for emitter in emitters:
             await emitter.emit(workflow.name, output)
         return output
 
+    # 运行输入数据后处理步骤
     dataset = await _run_post_process_steps(
         input_post_process_steps, dataset, context, callbacks
     )
 
-    # Make sure the incoming data is valid
+    # 验证数据集
     _validate_dataset(dataset)
 
     log.info("Final # of rows loaded: %s", len(dataset))
@@ -303,14 +401,16 @@ async def run_pipeline(
     try:
         await dump_stats()
 
+        # 运行工作流
         for workflow_to_run in workflows_to_run:
-            # Try to flush out any intermediate dataframes
+            # 尝试清除中间数据帧
             gc.collect()
 
             workflow = workflow_to_run.workflow
             workflow_name: str = workflow.name
             last_workflow = workflow_name
 
+            print("Running workflow: %s...", workflow_name)
             log.info("Running workflow: %s...", workflow_name)
 
             if is_resume_run and await storage.has(
@@ -326,7 +426,7 @@ async def run_pipeline(
             result = await workflow.run(context, callbacks)
             await write_workflow_stats(workflow, result, workflow_start_time)
 
-            # Save the output from the workflow
+            # 保存工作流输出
             output = await emit_workflow_output(workflow)
             yield PipelineRunResult(workflow_name, output, None)
             output = None
@@ -346,34 +446,61 @@ async def run_pipeline(
 def _create_callback_chain(
     callbacks: WorkflowCallbacks | None, progress: ProgressReporter | None
 ) -> WorkflowCallbacks:
-    """Create a callbacks manager."""
+    """
+    创建回调链管理器。
+
+    Args:
+        callbacks (WorkflowCallbacks | None): 回调函数。
+        progress (ProgressReporter | None): 进度报告器。
+
+    Returns:
+        WorkflowCallbacks: 回调链管理器。
+    """
+    # 创建回调链管理器实例
     manager = WorkflowCallbacksManager()
+
+    # 注册回调函数
     if callbacks is not None:
         manager.register(callbacks)
+
+    # 注册进度报告器
     if progress is not None:
         manager.register(ProgressWorkflowCallbacks(progress))
+
+    # 返回回调链管理器
     return manager
 
 
 async def _save_profiler_stats(
     storage: PipelineStorage, workflow_name: str, profile: MemoryProfile
 ):
-    """Save the profiler stats to the storage."""
+    """
+    保存性能分析数据到存储。
+
+    Args:
+        storage (PipelineStorage): 存储实例。
+        workflow_name (str): 工作流名称。
+        profile (MemoryProfile): 性能分析数据。
+    """
+    # 保存峰值统计数据
     await storage.set(
         f"{workflow_name}_profiling.peak_stats.csv",
         profile.peak_stats.to_csv(index=True),
     )
 
+    # 保存快照统计数据
     await storage.set(
         f"{workflow_name}_profiling.snapshot_stats.csv",
         profile.snapshot_stats.to_csv(index=True),
     )
 
+    # 保存时间统计数据
     await storage.set(
         f"{workflow_name}_profiling.time_stats.csv",
         profile.time_stats.to_csv(index=True),
     )
 
+    # 保存详细视图数据
     await storage.set(
         f"{workflow_name}_profiling.detailed_view.csv",
         profile.detailed_view.to_csv(index=True),
