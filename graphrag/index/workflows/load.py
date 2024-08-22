@@ -146,21 +146,43 @@ def create_workflow(
     additional_workflows: WorkflowDefinitions | None = None,
     memory_profile: bool = False,
 ) -> Workflow:
-    """Create a workflow from the given config."""
+    """
+    根据给定的配置创建一个工作流。
+
+    Args:
+        name (str): 工作流名称
+        steps (list[PipelineWorkflowStep] | None): 工作流步骤（可选）
+        config (PipelineWorkflowConfig | None): 工作流配置（可选）
+        additional_verbs (VerbDefinitions | None): 额外的动词定义（可选）
+        additional_workflows (WorkflowDefinitions | None): 额外的工作流定义（可选）
+        memory_profile (bool): 是否启用内存分析（默认为 False）
+
+    Returns:
+        Workflow: 创建的工作流对象
+    """
+    # 合并默认工作流和额外工作流定义
     additional_workflows = {
         **_default_workflows,
         **(additional_workflows or {}),
     }
+
+    # 获取工作流步骤，如果没有提供则根据名称和配置获取
     steps = steps or _get_steps_for_workflow(name, config, additional_workflows)
+    print(f"{steps=}")  # 输出获取的步骤
+
+    # 移除禁用的步骤
     steps = _remove_disabled_steps(steps)
+    print(f"{steps=}")  # 输出移除禁用步骤后的步骤
+
+    # 创建工作流对象
     return Workflow(
-        verbs=additional_verbs or {},
+        verbs=additional_verbs or {},  # 使用额外的动词定义或空字典
         schema={
-            "name": name,
-            "steps": steps,
+            "name": name,  # 工作流名称
+            "steps": steps,  # 工作流步骤
         },
-        validate=False,
-        memory_profile=memory_profile,
+        validate=False,  # 不进行验证
+        memory_profile=memory_profile,  # 是否启用内存分析
     )
 
 

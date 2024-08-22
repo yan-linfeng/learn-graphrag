@@ -1,6 +1,8 @@
 encoding_model: cl100k_base
 #skip_workflows: [ create_base_text_units, create_base_extracted_entities, create_final_covariates, create_summarized_entities, join_text_units_to_covariate_ids, create_base_entity_graph, create_final_entities, create_final_nodes, create_final_communities, join_text_units_to_entity_ids, create_final_relationships, join_text_units_to_relationship_ids, create_final_community_reports, create_final_text_units, create_base_documents, create_final_documents]
 skip_workflows: [ ]
+#skip_workflows: [ create_base_extracted_entities, create_final_covariates, create_summarized_entities, join_text_units_to_covariate_ids, create_base_entity_graph, create_final_entities, create_final_nodes, create_final_communities, join_text_units_to_entity_ids, create_final_relationships, join_text_units_to_relationship_ids, create_final_community_reports, create_final_text_units, create_base_documents, create_final_documents ]
+
 llm:
   api_key: ${GRAPHRAG_API_KEY}
   # type: openai_chat # or azure_openai_chat
@@ -86,14 +88,14 @@ cache:
 
 storage:
   type: file # or blob
-#  base_dir: "output/${timestamp}/artifacts"
+  #  base_dir: "output/${timestamp}/artifacts"
   base_dir: "output/prod/artifacts"
   # connection_string: <azure_blob_storage_connection_string>
   # container_name: <azure_blob_storage_container_name>
 
 reporting:
   type: file # or console, blob
-#  base_dir: "output/${timestamp}/reports"
+  #  base_dir: "output/${timestamp}/reports"
   base_dir: "output/prod/reports"
   # connection_string: <azure_blob_storage_connection_string>
   # container_name: <azure_blob_storage_container_name>

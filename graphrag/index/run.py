@@ -203,7 +203,7 @@ async def run_pipeline_with_config(
     storage = storage or _create_storage(config.storage)
 
     # 打印存储信息
-    print(f"{storage=}")
+    # print(f"{storage=}")
 
     # 设置缓存
     cache = cache or _create_cache(config.cache)
@@ -220,6 +220,7 @@ async def run_pipeline_with_config(
 
     # 设置工作流
     workflows = workflows or config.workflows
+    print(f"{workflows=}")
 
     # 检查输入数据是否为空
     if dataset is None:
