@@ -44,7 +44,7 @@ embeddings:
     # type: openai_embedding # or azure_openai_embedding
     type: oci_genai_embedding
     # model: xiaobu-embedding-v2
-    # model: multilingual-e5-large-instruct
+    model: multilingual-e5-large-instruct
     # model: bge-multilingual-gemma2
     model_id: cohere.embed-multilingual-v3.0
     api_base: http://localhost:7965/v1
